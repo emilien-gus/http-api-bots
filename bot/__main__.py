@@ -14,10 +14,10 @@ def main() -> None:
                         chat_id=update["message"]["chat"]["id"],
                         text=update["message"]["text"],
                     )
-                    print(".",  end="", flush=True)
-                    next_updates_offset = max(next_updates_offset, update["update_id"] + 1)
                 except:
                     pass
+                print(".",  end="", flush=True)
+                next_updates_offset = max(next_updates_offset, update["update_id"] + 1)
             time.sleep(1)
     except KeyboardInterrupt:
         print("\nBye!")
