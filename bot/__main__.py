@@ -6,7 +6,7 @@ def main() -> None:
     next_updates_offset = 0
     try:
         while(True):
-            updates = bot.client.getUpdates(next_updates_offset)
+            updates = bot.client.getUpdates(offset=next_updates_offset)
             bot.database.persist_updates(updates)
             for update in updates:
                 try:
