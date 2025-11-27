@@ -1,26 +1,16 @@
-import time
-import bot.client
-import bot.database
+import bot.long_polling
+from bot.dispatcher import Dispatcher
+from bot.handlers import get_handlers
+
 
 def main() -> None:
-    next_updates_offset = 0
     try:
-        while(True):
-            updates = bot.client.getUpdates(offset=next_updates_offset)
-            bot.database.persist_updates(updates)
-            for update in updates:
-                try:
-                    bot.client.sendMessage(
-                        chat_id=update["message"]["chat"]["id"],
-                        text=update["message"]["text"],
-                    )
-                except:
-                    pass
-                print(".",  end="", flush=True)
-                next_updates_offset = max(next_updates_offset, update["update_id"] + 1)
-            time.sleep(1)
+        dispatcher = Dispatcher()
+        dispatcher.add_handlers(*get_handlers())
+        bot.long_polling.start_long_polling(dispatcher)
     except KeyboardInterrupt:
         print("\nBye!")
-        
+
+
 if __name__ == "__main__":
     main()
