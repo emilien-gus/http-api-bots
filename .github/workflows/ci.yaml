@@ -34,15 +34,15 @@ jobs:
     
     - name: Run Black code style check
       run: |
-        black --check bot/
+        black .
     
     - name: Run Black linting check
       run: |
-        ruff check bot/ tests/
+        ruff check .
 
     - name: Run pytest tests
       run: |
-        PYTHONPATH=. pytest bot/tests/ -v
+        PYTHONPATH=. pytest tests/ -v
 
       
         
