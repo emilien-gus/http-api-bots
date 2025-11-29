@@ -6,20 +6,23 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+
 def recreate_db() -> None:
-    connection = sqlite3.connect(os.getenv('SQLITE_DATABASE_PATH'))
+    connection = sqlite3.connect(os.getenv("SQLITE_DATABASE_PATH"))
     with connection:
-        connection.execute('DROP TABLE IF EXISTS telegram_updates')
-        connection.execute('DROP TABLE IF EXISTS users')
-        connection.execute("""
+        connection.execute("DROP TABLE IF EXISTS telegram_updates")
+        connection.execute("DROP TABLE IF EXISTS users")
+        connection.execute(
+            """
             CREATE TABLE IF NOT EXISTS telegram_updates
             (
                 id INTEGER PRIMARY KEY,
                 payload TEXT NOT NULL
             )
-            """)
+            """
+        )
         connection.execute(
-                """
+            """
                 CREATE TABLE IF NOT EXISTS users
                 (
                     id INTEGER PRIMARY KEY,
@@ -29,18 +32,23 @@ def recreate_db() -> None:
                     data TEXT DEFAULT NULL
                 )
                 """,
-            )
+        )
     connection.close()
-    
+
+
 def persist_update(update: dict) -> None:
     payload = json.dumps(update, ensure_ascii=False)
     with sqlite3.connect(os.getenv("SQLITE_DATABASE_PATH")) as connection:
         with connection:
-            connection.execute("INSERT INTO telegram_updates (payload) VALUES (?)", (payload,))
+            connection.execute(
+                "INSERT INTO telegram_updates (payload) VALUES (?)", (payload,)
+            )
+
 
 def ensure_user_exists(telegram_id: int) -> None:
     """Ensure a user with the given telegram_id exists in the users table.
-    If the user doesn't exist, create them. All operations happen in a single transaction."""
+    If the user doesn't exist, create them. All operations happen in a single transaction.
+    """
     with sqlite3.connect(os.getenv("SQLITE_DATABASE_PATH")) as connection:
         with connection:
             # Check if user exists
@@ -57,20 +65,22 @@ def ensure_user_exists(telegram_id: int) -> None:
 
 def get_user(telegram_id: int) -> dict:
     """Get complete user object from the users table by telegram_id.
-    Returns a dict with all user fields (id, telegram_id, created_at, state, data), or None if user doesn't exist."""
+    Returns a dict with all user fields (id, telegram_id, created_at, state, data), or None if user doesn't exist.
+    """
     with sqlite3.connect(os.getenv("SQLITE_DATABASE_PATH")) as connection:
         with connection:
             cursor = connection.execute(
-                "SELECT id, telegram_id, created_at, state, data FROM users WHERE telegram_id = ?", (telegram_id,)
+                "SELECT id, telegram_id, created_at, state, data FROM users WHERE telegram_id = ?",
+                (telegram_id,),
             )
             result = cursor.fetchone()
             if result:
                 return {
-                    'id': result[0],
-                    'telegram_id': result[1],
-                    'created_at': result[2],
-                    'state': result[3],
-                    'data': result[4]
+                    "id": result[0],
+                    "telegram_id": result[1],
+                    "created_at": result[2],
+                    "state": result[3],
+                    "data": result[4],
                 }
             return None
 
@@ -80,8 +90,7 @@ def update_user_state(telegram_id: int, state: str) -> None:
     with sqlite3.connect(os.getenv("SQLITE_DATABASE_PATH")) as connection:
         with connection:
             connection.execute(
-                "UPDATE users SET state = ? WHERE telegram_id = ?",
-                (state, telegram_id)
+                "UPDATE users SET state = ? WHERE telegram_id = ?", (state, telegram_id)
             )
 
 
@@ -91,7 +100,7 @@ def update_user_data(telegram_id: int, data: dict) -> None:
         with connection:
             connection.execute(
                 "UPDATE users SET data = ? WHERE telegram_id = ?",
-                (json.dumps(data, ensure_ascii=False, indent=2), telegram_id)
+                (json.dumps(data, ensure_ascii=False, indent=2), telegram_id),
             )
 
 
@@ -101,5 +110,5 @@ def clear_user_data(telegram_id: int) -> None:
         with connection:
             connection.execute(
                 "UPDATE users SET state = NULL, data = NULL WHERE telegram_id = ?",
-                (telegram_id,)
+                (telegram_id,),
             )

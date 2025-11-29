@@ -16,18 +16,18 @@ def get_telegram_file_uri() -> str:
 
 
 def make_request(method: str, **kwargs) -> dict:
-    json_data = json.dumps(kwargs).encode('utf-8')
+    json_data = json.dumps(kwargs).encode("utf-8")
     request = urllib.request.Request(
-        method='POST',
+        method="POST",
         url=f"{get_telegram_base_uri()}/{method}",
         data=json_data,
         headers={
-            'Content-Type': 'application/json',
+            "Content-Type": "application/json",
         },
     )
 
     with urllib.request.urlopen(request) as response:
-        response_body = response.read().decode('utf-8')
+        response_body = response.read().decode("utf-8")
         response_json = json.loads(response_body)
         assert response_json["ok"] == True
         return response_json["result"]
@@ -35,11 +35,11 @@ def make_request(method: str, **kwargs) -> dict:
 
 def download_file(file_path: str) -> None:
     url = f"{get_telegram_file_uri()}/{file_path}"
-    
+
     directory = os.path.dirname(file_path)
     if directory and not os.path.exists(directory):
         os.makedirs(directory, exist_ok=True)
-        
+
     urllib.request.urlretrieve(url, file_path)
 
 
@@ -61,7 +61,9 @@ def answer_callback_query(callback_query_id: str, **kwargs) -> dict:
     """
     https://core.telegram.org/bots/api#answercallbackquery
     """
-    return make_request("answerCallbackQuery", callback_query_id=callback_query_id, **kwargs)
+    return make_request(
+        "answerCallbackQuery", callback_query_id=callback_query_id, **kwargs
+    )
 
 
 def delete_message(chat_id: int, message_id: int) -> dict:
@@ -76,6 +78,7 @@ def get_file(file_id: str) -> dict:
     https://core.telegram.org/bots/api#getfile
     """
     return make_request("getFile", file_id=file_id)
+
 
 def send_photo(chat_id: int, photo: str, **kwargs) -> dict:
     return make_request("sendPhoto", chat_id=chat_id, photo=photo, **kwargs)
