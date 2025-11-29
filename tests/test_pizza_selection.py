@@ -1,4 +1,4 @@
-from bot.tests.mocks import Mock
+from tests.mocks import Mock
 from bot.dispatcher import Dispatcher
 from bot.handlers.pizza_selection import PizzaSelectionHandler
 
