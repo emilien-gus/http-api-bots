@@ -7,9 +7,23 @@ from bot.domain.storage import Storage
 
 class Handler(ABC):
     @abstractmethod
-    def can_handle(self, update: dict, state: str, data: dict, storage: Storage, messenger: Messenger) -> bool:
+    def can_handle(
+        self,
+        update: dict,
+        state: str,
+        data: dict,
+        storage: Storage,
+        messenger: Messenger,
+    ) -> bool:
         pass
 
     @abstractmethod
-    def handle(self, update: dict, state: str, data: dict, storage: Storage, messenger: Messenger) -> HandlerStatus:
+    def handle(
+        self,
+        update: dict,
+        state: str,
+        data: dict,
+        storage: Storage,
+        messenger: Messenger,
+    ) -> HandlerStatus:
         pass

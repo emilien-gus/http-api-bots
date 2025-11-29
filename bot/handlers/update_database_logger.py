@@ -5,9 +5,23 @@ from bot.domain.storage import Storage
 
 
 class UpdateDatabaseLogger(Handler):
-    def can_handle(self, update: dict, state: str, data: dict, storage: Storage, messenger: Messenger) -> bool:
+    def can_handle(
+        self,
+        update: dict,
+        state: str,
+        data: dict,
+        storage: Storage,
+        messenger: Messenger,
+    ) -> bool:
         return True
 
-    def handle(self, update: dict, state: str, data: dict, storage: Storage, messenger: Messenger) -> HandlerStatus:
+    def handle(
+        self,
+        update: dict,
+        state: str,
+        data: dict,
+        storage: Storage,
+        messenger: Messenger,
+    ) -> HandlerStatus:
         storage.persist_update(update)
         return HandlerStatus.CONTINUE

@@ -1,4 +1,5 @@
-from abc import  ABC, abstractmethod
+from abc import ABC, abstractmethod
+
 
 class Storage(ABC):
     @abstractmethod
@@ -6,7 +7,7 @@ class Storage(ABC):
 
     @abstractmethod
     def persist_update(self, update: dict) -> None: ...
-   
+
     @abstractmethod
     def ensure_user_exists(self, telegram_id: int) -> None: ...
 
@@ -18,7 +19,6 @@ class Storage(ABC):
 
     @abstractmethod
     def update_user_data(self, telegram_id: int, data: dict) -> None: ...
-    
+
     @abstractmethod
     def clear_user_data(self, telegram_id: int) -> None: ...
-

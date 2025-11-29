@@ -7,14 +7,28 @@ from bot.domain.storage import Storage
 
 
 class MessageStart(Handler):
-    def can_handle(self, update: dict, state: str, data: dict, storage: Storage, messenger: Messenger) -> bool:
+    def can_handle(
+        self,
+        update: dict,
+        state: str,
+        data: dict,
+        storage: Storage,
+        messenger: Messenger,
+    ) -> bool:
         return (
             "message" in update
             and "text" in update["message"]
             and update["message"]["text"] == "/start"
         )
 
-    def handle(self, update: dict, state: str, data: dict, storage: Storage, messenger: Messenger) -> HandlerStatus:
+    def handle(
+        self,
+        update: dict,
+        state: str,
+        data: dict,
+        storage: Storage,
+        messenger: Messenger,
+    ) -> HandlerStatus:
         telegram_id = update["message"]["from"]["id"]
 
         storage.clear_user_data(telegram_id)

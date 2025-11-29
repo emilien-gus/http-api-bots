@@ -9,7 +9,7 @@ def main() -> None:
     try:
         storage = StorageSqlite()
         messenger = MessengerTelegram()
-        
+
         dispatcher = Dispatcher(storage, messenger)
         dispatcher.add_handlers(*get_handlers())
         bot.long_polling.start_long_polling(dispatcher)

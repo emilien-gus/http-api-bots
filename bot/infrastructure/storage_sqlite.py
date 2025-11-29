@@ -37,7 +37,6 @@ class StorageSqlite(Storage):
             )
         connection.close()
 
-
     def persist_update(self, update: dict) -> None:
         payload = json.dumps(update, ensure_ascii=False)
         with sqlite3.connect(os.getenv("SQLITE_DATABASE_PATH")) as connection:
@@ -45,7 +44,6 @@ class StorageSqlite(Storage):
                 connection.execute(
                     "INSERT INTO telegram_updates (payload) VALUES (?)", (payload,)
                 )
-
 
     def ensure_user_exists(self, telegram_id: int) -> None:
         """Ensure a user with the given telegram_id exists in the users table.
@@ -63,7 +61,6 @@ class StorageSqlite(Storage):
                     connection.execute(
                         "INSERT INTO users (telegram_id) VALUES (?)", (telegram_id,)
                     )
-
 
     def get_user(self, telegram_id: int) -> dict:
         """Get complete user object from the users table by telegram_id.
@@ -86,15 +83,14 @@ class StorageSqlite(Storage):
                     }
                 return None
 
-
     def update_user_state(self, telegram_id: int, state: str) -> None:
         """Update user state in the users table."""
         with sqlite3.connect(os.getenv("SQLITE_DATABASE_PATH")) as connection:
             with connection:
                 connection.execute(
-                    "UPDATE users SET state = ? WHERE telegram_id = ?", (state, telegram_id)
+                    "UPDATE users SET state = ? WHERE telegram_id = ?",
+                    (state, telegram_id),
                 )
-
 
     def update_user_data(self, telegram_id: int, data: dict) -> None:
         """Update user data with a JSON object in the users table."""
@@ -104,7 +100,6 @@ class StorageSqlite(Storage):
                     "UPDATE users SET data = ? WHERE telegram_id = ?",
                     (json.dumps(data, ensure_ascii=False, indent=2), telegram_id),
                 )
-
 
     def clear_user_data(self, telegram_id: int) -> None:
         """Clear user state and data in the users table."""
