@@ -1,13 +1,13 @@
 import json
 
-import bot.telegram_api_client
-import bot.database
 from bot.handlers.handler import Handler
 from bot.handler_status import HandlerStatus
+from bot.domain.messenger import Messenger
+from bot.domain.storage import Storage
 
 
 class PizzaDrinksHandler(Handler):
-    def can_handle(self, update: dict, state: str, data: dict) -> bool:
+    def can_handle(self, update: dict, state: str, data: dict, storage: Storage, messenger: Messenger) -> bool:
         if "callback_query" not in update:
             return False
 
@@ -17,7 +17,7 @@ class PizzaDrinksHandler(Handler):
         callback_data = update["callback_query"]["data"]
         return callback_data.startswith("drink_")
 
-    def handle(self, update: dict, state: str, data: dict) -> HandlerStatus:
+    def handle(self, update: dict, state: str, data: dict, storage: Storage, messenger: Messenger) -> HandlerStatus:
         telegram_id = update["callback_query"]["from"]["id"]
         callback_data = update["callback_query"]["data"]
 
@@ -35,11 +35,11 @@ class PizzaDrinksHandler(Handler):
 
         data["drink"] = selected_drink
 
-        bot.database.update_user_data(telegram_id, data)
-        bot.database.update_user_state(telegram_id, "WAIT_FOR_ORDER_APPROVE")
-        bot.telegram_api_client.answer_callback_query(update["callback_query"]["id"])
+        storage.update_user_data(telegram_id, data)
+        storage.update_user_state(telegram_id, "WAIT_FOR_ORDER_APPROVE")
+        messenger.answer_callback_query(update["callback_query"]["id"])
 
-        bot.telegram_api_client.delete_message(
+        messenger.delete_message(
             chat_id=update["callback_query"]["message"]["chat"]["id"],
             message_id=update["callback_query"]["message"]["message_id"],
         )
@@ -57,7 +57,7 @@ class PizzaDrinksHandler(Handler):
 
 Is everything correct?"""
 
-        bot.telegram_api_client.send_message(
+        messenger.send_message(
             chat_id=update["callback_query"]["message"]["chat"]["id"],
             text=order_summary,
             parse_mode="Markdown",

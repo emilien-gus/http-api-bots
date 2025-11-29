@@ -1,11 +1,16 @@
 import bot.long_polling
 from bot.dispatcher import Dispatcher
 from bot.handlers import get_handlers
+from bot.infrastructure.messenger_telegram import MessengerTelegram
+from bot.infrastructure.storage_sqlite import StorageSqlite
 
 
 def main() -> None:
     try:
-        dispatcher = Dispatcher()
+        storage = StorageSqlite()
+        messenger = MessengerTelegram()
+        
+        dispatcher = Dispatcher(storage, messenger)
         dispatcher.add_handlers(*get_handlers())
         bot.long_polling.start_long_polling(dispatcher)
     except KeyboardInterrupt:

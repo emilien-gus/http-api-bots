@@ -1,13 +1,16 @@
 import json
 
-from bot.database import get_user
 from bot.handlers.handler import Handler
 from bot.handler_status import HandlerStatus
+from bot.domain.messenger import Messenger
+from bot.domain.storage import Storage
 
 
 class Dispatcher:
-    def __init__(self) -> None:
+    def __init__(self, storage: Storage, messenger: Messenger) -> None:
         self._handlers: list[Handler] = []
+        self._storage = storage
+        self._messenger = messenger
 
     def add_handlers(self, *handlers: Handler) -> None:
         for handler in handlers:
@@ -24,7 +27,7 @@ class Dispatcher:
     def dispatch(self, update: dict) -> None:
         # Get user state for handlers that need it
         telegram_id = self._get_telegram_id_from_update(update)
-        user = get_user(telegram_id) if telegram_id else None
+        user = self._storage.get_user(telegram_id) if telegram_id else None
 
         user_state = user.get("state") if user else None
 
@@ -34,6 +37,6 @@ class Dispatcher:
         order_data = json.loads(user_data)
 
         for handler in self._handlers:
-            if handler.can_handle(update, user_state, order_data):
-                if handler.handle(update, user_state, order_data) == HandlerStatus.STOP:
+            if handler.can_handle(update, user_state, order_data, self._storage, self._messenger):
+                if handler.handle(update, user_state, order_data, self._storage, self._messenger) == HandlerStatus.STOP:
                     break
