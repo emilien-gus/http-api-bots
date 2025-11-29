@@ -10,12 +10,12 @@ load_dotenv()
 class StoragePostgres(Storage):
     def _get_connection(self):
         """Get PostgreSQL connection using pg8000."""
-        host=os.getenv("POSTGRES_HOST")
-        port=os.getenv("POSTGRES_PORT")
-        user=os.getenv("POSTGRES_USER")
-        password=os.getenv("POSTGRES_PASSWORD")
-        database=os.getenv("POSTGRES_DB")
-        
+        host = os.getenv("POSTGRES_HOST")
+        port = os.getenv("POSTGRES_PORT")
+        user = os.getenv("POSTGRES_USER")
+        password = os.getenv("POSTGRES_PASSWORD")
+        database = os.getenv("POSTGRES_DB")
+
         if host is None:
             raise ValueError("POSTGRES_PASSWORD environment variable is not set")
         if port is None:
@@ -26,7 +26,7 @@ class StoragePostgres(Storage):
             raise ValueError("POSTGRES_PASSWORD environment variable is not set")
         if database is None:
             raise ValueError("POSTGRES_DB environment variable is not set")
-        
+
         return pg8000.connect(
             host=host,
             port=port,
@@ -72,8 +72,7 @@ class StoragePostgres(Storage):
         try:
             with connection.cursor() as cursor:
                 cursor.execute(
-                    "INSERT INTO telegram_updates (payload) VALUES (%s)",
-                    (payload,)
+                    "INSERT INTO telegram_updates (payload) VALUES (%s)", (payload,)
                 )
             connection.commit()
         finally:
@@ -85,13 +84,11 @@ class StoragePostgres(Storage):
         try:
             with connection.cursor() as cursor:
                 cursor.execute(
-                    "SELECT 1 FROM users WHERE telegram_id = %s", 
-                    (telegram_id,)
+                    "SELECT 1 FROM users WHERE telegram_id = %s", (telegram_id,)
                 )
                 if cursor.fetchone() is None:
                     cursor.execute(
-                        "INSERT INTO users (telegram_id) VALUES (%s)", 
-                        (telegram_id,)
+                        "INSERT INTO users (telegram_id) VALUES (%s)", (telegram_id,)
                     )
             connection.commit()
         finally:
