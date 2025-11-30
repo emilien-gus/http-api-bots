@@ -53,7 +53,7 @@ postgres_run: docker_volume docker_net
 	  -e POSTGRES_PASSWORD="$(POSTGRES_PASSWORD)" \
 	  -e POSTGRES_DB="$(POSTGRES_DB)" \
 	  -p "$(POSTGRES_PORT_HOST):$(POSTGRES_PORT_CONTAINER)" \
-	  -v $(POSTGRES_VOLUME):/var/lib/postgresql/data \
+	  -v $(POSTGRES_VOLUME):/var/lib/postgresql \
 	  --health-cmd="pg_isready -U $(POSTGRES_USER)" \
 	  --health-interval=10s \
 	  --health-timeout=5s \
@@ -85,7 +85,6 @@ run: docker_net
 	  -e POSTGRES_PASSWORD="$(POSTGRES_PASSWORD)" \
 	  -e POSTGRES_DB="$(POSTGRES_DB)" \
 	  -e TELEGRAM_TOKEN="$(TELEGRAM_TOKEN)" \
-	  -e YOOKASSA_TOKEN="$(YOOKASSA_TOKEN)" \
 	  --network $(DOCKER_NETWORK) \
 	  $(BOT_IMAGE)
 
