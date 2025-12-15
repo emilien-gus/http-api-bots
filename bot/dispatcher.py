@@ -1,10 +1,18 @@
 import json
+import logging
+import time
 
 from bot.handlers.handler import Handler
 from bot.handler_status import HandlerStatus
 from bot.domain.messenger import Messenger
 from bot.domain.storage import Storage
 
+logger = logging.getLogger(__name__)
+logging.basicConfig(
+    level=logging.INFO,
+    format="[%(asctime)s.%(msecs)03d] %(message)s",
+    datefmt="%Y-%m-%d %H:%M:%S",
+)
 
 class Dispatcher:
     def __init__(self, storage: Storage, messenger: Messenger) -> None:
@@ -24,7 +32,7 @@ class Dispatcher:
             return update["callback_query"]["from"]["id"]
         return None
 
-    def dispatch(self, update: dict) -> None:
+    async def dispatch(self, update: dict) -> None:
         # Get user state for handlers that need it
         telegram_id = self._get_telegram_id_from_update(update)
         user = self._storage.get_user(telegram_id) if telegram_id else None
