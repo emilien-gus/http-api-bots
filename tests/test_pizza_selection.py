@@ -1,9 +1,12 @@
+import pytest
+
 from tests.mocks import Mock
 from bot.dispatcher import Dispatcher
 from bot.handlers.pizza_selection import PizzaSelectionHandler
 
 
-def test_pizza_selection_handler_execution():
+@pytest.mark.asyncio
+async def test_pizza_selection_handler_execution():
     test_update = {
         "update_id": 817030615,
         "callback_query": {
@@ -43,30 +46,30 @@ def test_pizza_selection_handler_execution():
     delete_message_called = False
     send_message_called = False
 
-    def update_user_data(telegram_id: int, user_data: dict) -> None:
+    async def update_user_data(telegram_id: int, user_data: dict) -> None:
         nonlocal update_user_data_called
         update_user_data_called = True
         assert telegram_id == 1200584435
         assert user_data == {"pizza_name": "Margherita"}
 
-    def update_user_state(telegram_id: int, state: str) -> None:
+    async def update_user_state(telegram_id: int, state: str) -> None:
         nonlocal update_user_state_called
         update_user_state_called = True
         assert telegram_id == 1200584435
         assert state == "WAIT_FOR_PIZZA_SIZE"
 
-    def answer_callback_query(callback_query_id: str) -> None:
+    async def answer_callback_query(callback_query_id: str) -> None:
         nonlocal answer_callback_query_called
         answer_callback_query_called = True
         assert callback_query_id == "test_callback_id"
 
-    def delete_message(chat_id: int, message_id: int) -> None:
+    async def delete_message(chat_id: int, message_id: int) -> None:
         nonlocal delete_message_called
         delete_message_called = True
         assert chat_id == 1200584435
         assert message_id == 220
 
-    def send_message(chat_id: int, text: str, reply_markup: str = None) -> None:
+    async def send_message(chat_id: int, text: str, reply_markup: str = None) -> None:
         nonlocal send_message_called
         send_message_called = True
         assert chat_id == 1200584435
@@ -74,7 +77,7 @@ def test_pizza_selection_handler_execution():
         assert reply_markup is not None
         # Можно дополнительно проверить структуру reply_markup если нужно
 
-    def get_user(telegram_id: int) -> dict:
+    async def get_user(telegram_id: int) -> dict:
         assert telegram_id == 1200584435
         # Возвращаем пользователя в состоянии WAIT_FOR_PIZZA_NAME
         return {
@@ -102,7 +105,7 @@ def test_pizza_selection_handler_execution():
     dispatcher = Dispatcher(mock_storage, mock_messenger)
     pizza_handler = PizzaSelectionHandler()
     dispatcher.add_handlers(pizza_handler)
-    dispatcher.dispatch(test_update)
+    await dispatcher.dispatch(test_update)
 
     # Verify all expected methods were called
     assert update_user_data_called, "update_user_data should be called"

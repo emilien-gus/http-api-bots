@@ -1,3 +1,4 @@
+import asyncio
 import json
 
 from bot.handlers.handler import Handler
@@ -24,7 +25,7 @@ class OrderApprovalHandler(Handler):
         callback_data = update["callback_query"]["data"]
         return callback_data in ["order_approve", "order_restart"]
 
-    def handle(
+    async def handle(
         self,
         update: dict,
         state: str,
@@ -34,15 +35,16 @@ class OrderApprovalHandler(Handler):
     ) -> HandlerStatus:
         telegram_id = update["callback_query"]["from"]["id"]
         callback_data = update["callback_query"]["data"]
-
-        messenger.answer_callback_query(update["callback_query"]["id"])
-        messenger.delete_message(
-            chat_id=update["callback_query"]["message"]["chat"]["id"],
-            message_id=update["callback_query"]["message"]["message_id"],
+        await asyncio.gather(
+            messenger.answer_callback_query(update["callback_query"]["id"]),
+            messenger.delete_message(
+                chat_id=update["callback_query"]["message"]["chat"]["id"],
+                message_id=update["callback_query"]["message"]["message_id"],
+            ),
         )
 
         if callback_data == "order_approve":
-            storage.update_user_state(telegram_id, "ORDER_FINISHED")
+            await storage.update_user_state(telegram_id, "ORDER_FINISHED")
 
             pizza_name = data.get("pizza_name", "Unknown")
             pizza_size = data.get("pizza_size", "Unknown")
@@ -59,54 +61,57 @@ Thank you for your order! Your pizza will be ready soon.
 Send /start to place another order."""
 
             # Send order confirmation message
-            messenger.send_message(
+            await messenger.send_message(
                 chat_id=update["callback_query"]["message"]["chat"]["id"],
                 text=order_confirmation,
                 parse_mode="Markdown",
             )
 
         elif callback_data == "order_restart":
-            storage.clear_user_data(telegram_id)
-
-            # Update user state to wait for pizza selection
-            storage.update_user_state(telegram_id, "WAIT_FOR_PIZZA_NAME")
-
-            # Send pizza selection message with inline keyboard
-            messenger.send_message(
-                chat_id=update["callback_query"]["message"]["chat"]["id"],
-                text="Please choose pizza type",
-                reply_markup=json.dumps(
-                    {
-                        "inline_keyboard": [
-                            [
-                                {
-                                    "text": "Margherita",
-                                    "callback_data": "pizza_margherita",
-                                },
-                                {
-                                    "text": "Pepperoni",
-                                    "callback_data": "pizza_pepperoni",
-                                },
+            await asyncio.gather(
+                storage.clear_user_data(telegram_id),
+                # Update user state to wait for pizza selection
+                storage.update_user_state(telegram_id, "WAIT_FOR_PIZZA_NAME"),
+                # Send pizza selection message with inline keyboard
+                messenger.send_message(
+                    chat_id=update["callback_query"]["message"]["chat"]["id"],
+                    text="Please choose pizza type",
+                    reply_markup=json.dumps(
+                        {
+                            "inline_keyboard": [
+                                [
+                                    {
+                                        "text": "Margherita",
+                                        "callback_data": "pizza_margherita",
+                                    },
+                                    {
+                                        "text": "Pepperoni",
+                                        "callback_data": "pizza_pepperoni",
+                                    },
+                                ],
+                                [
+                                    {
+                                        "text": "Quattro Stagioni",
+                                        "callback_data": "pizza_quattro_stagioni",
+                                    },
+                                    {
+                                        "text": "Capricciosa",
+                                        "callback_data": "pizza_capricciosa",
+                                    },
+                                ],
+                                [
+                                    {
+                                        "text": "Diavola",
+                                        "callback_data": "pizza_diavola",
+                                    },
+                                    {
+                                        "text": "Prosciutto",
+                                        "callback_data": "pizza_prosciutto",
+                                    },
+                                ],
                             ],
-                            [
-                                {
-                                    "text": "Quattro Stagioni",
-                                    "callback_data": "pizza_quattro_stagioni",
-                                },
-                                {
-                                    "text": "Capricciosa",
-                                    "callback_data": "pizza_capricciosa",
-                                },
-                            ],
-                            [
-                                {"text": "Diavola", "callback_data": "pizza_diavola"},
-                                {
-                                    "text": "Prosciutto",
-                                    "callback_data": "pizza_prosciutto",
-                                },
-                            ],
-                        ],
-                    },
+                        },
+                    ),
                 ),
             )
 

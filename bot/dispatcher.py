@@ -1,6 +1,5 @@
 import json
 import logging
-import time
 
 from bot.handlers.handler import Handler
 from bot.handler_status import HandlerStatus
@@ -13,6 +12,7 @@ logging.basicConfig(
     format="[%(asctime)s.%(msecs)03d] %(message)s",
     datefmt="%Y-%m-%d %H:%M:%S",
 )
+
 
 class Dispatcher:
     def __init__(self, storage: Storage, messenger: Messenger) -> None:
@@ -35,11 +35,11 @@ class Dispatcher:
     async def dispatch(self, update: dict) -> None:
         # Get user state for handlers that need it
         telegram_id = self._get_telegram_id_from_update(update)
-        user = self._storage.get_user(telegram_id) if telegram_id else None
+        user = await self._storage.get_user(telegram_id) if telegram_id else None
 
         user_state = user.get("state") if user else None
 
-        user_data = user["data"] if user else "{}"
+        user_data = user.get("order_json") if user else "{}"
         if user_data is None:
             user_data = "{}"
         order_data = json.loads(user_data)
@@ -49,7 +49,7 @@ class Dispatcher:
                 update, user_state, order_data, self._storage, self._messenger
             ):
                 if (
-                    handler.handle(
+                    await handler.handle(
                         update, user_state, order_data, self._storage, self._messenger
                     )
                     == HandlerStatus.STOP

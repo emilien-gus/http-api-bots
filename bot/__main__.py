@@ -23,5 +23,6 @@ async def main() -> None:
         if hasattr(storage, "close"):
             await storage.close()
 
+
 if __name__ == "__main__":
     asyncio.run(main())
