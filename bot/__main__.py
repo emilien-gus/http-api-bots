@@ -1,28 +1,42 @@
 import asyncio
-import bot.long_polling
+import json
+import logging
+import os
 
-from bot.dispatcher import Dispatcher
-from bot.handlers import get_handlers
-from bot.infrastructure.messenger_telegram import MessengerTelegram
-from bot.infrastructure.storage_postgres import StoragePostgres
+from aiogram import Bot, Dispatcher, F
+from aiogram.types import Message, Update
+from aiogram.utils.serialization import deserialize_telegram_object_to_python
+
+import dotenv
+
+dotenv.load_dotenv()
+
+dispatcher = Dispatcher()
+
+
+@dispatcher.update.outer_middleware()
+async def logger_middlevare(handler: callable, event: Update, data: dict):
+    payload = deserialize_telegram_object_to_python(event)
+    # save in DB
+    print(json.dumps(payload, ensure_ascii=False, indent=2))
+    return await handler(event, data)
+
+
+@dispatcher.message(F.text)
+async def message_text_echo_handler(message: Message):
+    await message.answer(message.text)
+
+
+@dispatcher.message(F.photo)
+async def message_photo_echo_handler(message: Message):
+    await message.answer_photo(message.photo[-1].file_id, caption=message.caption)
 
 
 async def main() -> None:
-    storage = StoragePostgres()
-    messenger = MessengerTelegram()
-    try:
-        dispatcher = Dispatcher(storage, messenger)
-        dispatcher.add_handlers(*get_handlers())
-        await bot.long_polling.start_long_polling(dispatcher)
-    except KeyboardInterrupt:
-        print("\nBye!")
-
-    finally:
-        if hasattr(messenger, "close"):
-            await messenger.close()
-        if hasattr(storage, "close"):
-            await storage.close()
+    bot = Bot(token=os.getenv("TELEGRAM_TOKEN"))
+    await dispatcher.start_polling(bot)
 
 
 if __name__ == "__main__":
+    logging.basicConfig(level=logging.INFO)
     asyncio.run(main())
